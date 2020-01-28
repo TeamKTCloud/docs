@@ -20,7 +20,7 @@
      - 벤더 독립성 - 각 클라우드 인프라가 가진 특화 기능 사용 가능해짐
      - ..
 
-   ![MC](C:\Users\10151147\Desktop\인턴 교육사항\MC.png)
+   ![MC](https://miro.medium.com/max/665/1*v61my2n6-vsJAvRcv609hg.png)
 
 2. **Hybrid Cloud**
 
@@ -43,7 +43,7 @@
 
      - ...
 
-       ​						![HC](C:\Users\10151147\Desktop\인턴 교육사항\HC.png)
+     ![HC](https://jelecos.com/wp-content/uploads/2017/03/hybrid-cloud-image-2-1024x665.png)
 
    
 
@@ -55,7 +55,7 @@
 
    
 
-     ![hybrid multi cloud에 대한 이미지 검색결과](https://jelecos.com/wp-content/uploads/2017/03/hybrid-cloud-image-2-1024x665.png)
+     ![hybrid multi cloud에 대한 이미지 검색결과](https://image.jimcdn.com/app/cms/image/transf/dimension=940x10000:format=jpg/path/see04ece053d6bad8/image/ic626ef75eeb93bfd/version/1518423712/image.jpg)
 
 ### Hybrid Cloud 관리 플랫폼 등장
 
