@@ -1,0 +1,65 @@
+import hashlib
+import hmac
+import base64
+import requests
+import urllib
+
+endPoint='https://api.ucloudbiz.olleh.com/packaging/v1/client/api?'
+
+########################################################
+# # Template 가져오기
+params={}
+params['command']='getTemplate'
+params['packagename']='test_wordpress'
+params['response']='json'
+params['apikey']='YOUR ACCESS KEY'
+secretkey='YOUR SECRET KEY'
+
+secretkey = secretkey.encode('utf-8')
+
+requestParams = '&'.join(['='.join([k,urllib.parse.quote_plus(params[k])]) for k in params.keys()])
+
+# signature 생성
+message = '&'.join(['='.join([k.lower(),urllib.parse.quote_plus(params[k]).lower()]) for k in sorted(params.keys())])
+message = message.encode('utf-8')
+digest = hmac.new(secretkey, msg=message, digestmod=hashlib.sha1).digest()
+signature = base64.b64encode(digest)
+signature = urllib.parse.quote_plus(signature)
+
+# Request URL 생성
+requestURL=endPoint+requestParams+'&signature='+signature
+
+# data 파싱
+data = requests.get(requestURL).json()
+templateJSON = data['gettemplateresponse']['gettemplateresult']['templatebody']
+
+##########################################
+# # Validate Template
+params={}
+params['command']='validateTemplate'
+params['TemplateBody']= str(templateJSON)
+# params['response']='json'
+params['apikey']='YOUR ACCESS KEY'
+secretkey='YOUR SECRET KEY'
+secretkey = secretkey.encode('utf-8')
+
+requestParams = '&'.join(['='.join([k,urllib.parse.quote_plus(params[k])]) for k in params.keys()])
+requestParams = requestParams.replace("+","")
+
+# signature 생성
+message = '&'.join(['='.join([k.lower(),urllib.parse.quote_plus(params[k]).lower()]) for k in sorted(params.keys())])
+message = message.replace("+","")
+message = message.encode('utf-8')
+digest = hmac.new(secretkey, msg=message, digestmod=hashlib.sha1).digest()
+signature = base64.b64encode(digest)
+signature = urllib.parse.quote_plus(signature)
+
+# Request URL 생성
+requestURL2=endPoint+requestParams+'&signature='+signature
+print(requestURL2)
+# data2 = requests.get(requestURL2).json()
+# print(data2)
+
+# 결과 비교
+# arURL = 'https://api.ucloudbiz.olleh.com/packaging/v1/client/api?command=validateTemplate&TemplateBody=%7B%22UPACTemplateVersion%22%3A%222018-10-25%22%2C%22Description%22%3A%221VM%EC%9C%BC%EB%A1%9C%EA%B5%AC%EC%84%B1%EB%90%9CWordpress%EC%9E%85%EB%8B%88%EB%8B%A4.%22%2C%22Parameters%22%3A%7B%22ZoneId%22%3A%7B%22Description%22%3A%22%5BServer%5DZoneID%EB%A5%BC%EC%9E%85%EB%A0%A5%ED%95%98%EC%84%B8%EC%9A%94.%22%2C%22Type%22%3A%22String%22%2C%22Default%22%3A%2295e2f517-d64a-4866-8585-5177c256f7c7%22%7D%2C%22ProductCode%22%3A%7B%22Description%22%3A%22%5BServer%5DProductCode%EB%A5%BC%EC%9E%85%EB%A0%A5%ED%95%98%EC%84%B8%EC%9A%94.CentOS7%EC%9D%B4%EC%83%81%EB%A7%8C%EA%B0%80%EB%8A%A5%ED%95%A9%EB%8B%88%EB%8B%A4.%22%2C%22Type%22%3A%22String%22%2C%22Default%22%3A%22std_cent7.064biten_1x1_rootonly%22%7D%2C%22sshPortNumber%22%3A%7B%22Description%22%3A%22%5BServer%5D%EC%84%9C%EB%B2%84%EB%A5%BC%EA%B3%B5%EC%9D%B8IP%EB%A1%9C%EC%97%B0%EA%B2%B0%ED%95%A0SSHport%EB%A5%BC%EC%9E%85%EB%A0%A5%ED%95%98%EC%84%B8%EC%9A%94.%22%2C%22Type%22%3A%22Number%22%2C%22Default%22%3A%2222%22%7D%2C%22webPortNumber%22%3A%7B%22Description%22%3A%22%5BServer%5D%EC%84%9C%EB%B2%84%EB%A5%BC%EA%B3%B5%EC%9D%B8IP%EB%A1%9C%EC%97%B0%EA%B2%B0%ED%95%A0Webport%EB%A5%BC%EC%9E%85%EB%A0%A5%ED%95%98%EC%84%B8%EC%9A%94.%22%2C%22Type%22%3A%22Number%22%2C%22Default%22%3A%2280%22%7D%2C%22DBuser%22%3A%7B%22Description%22%3A%22%5BServer%5DMariaDB%EC%9D%98%EC%9C%A0%EC%A0%80%EC%9D%B4%EB%A6%84%EC%9D%84%EC%9E%85%EB%A0%A5%ED%95%98%EC%84%B8%EC%9A%94.%22%2C%22Type%22%3A%22String%22%2C%22Default%22%3A%22scott%22%7D%2C%22DBpassword%22%3A%7B%22Description%22%3A%22%5BServer%5DMariaDB%EC%9D%98%EC%9C%A0%EC%A0%80%EB%B9%84%EB%B0%80%EB%B2%88%ED%98%B8%EB%A5%BC%EC%9E%85%EB%A0%A5%ED%95%98%EC%84%B8%EC%9A%94.%22%2C%22Type%22%3A%22String%22%2C%22Default%22%3A%22qwer1234%22%7D%2C%22DBrootpassword%22%3A%7B%22Description%22%3A%22%5BServer%5DMariaDB%EC%9D%98root%EB%B9%84%EB%B0%80%EB%B2%88%ED%98%B8%EB%A5%BC%EC%9E%85%EB%A0%A5%ED%95%98%EC%84%B8%EC%9A%94.%22%2C%22Type%22%3A%22String%22%2C%22Default%22%3A%22yY3h8wjnq%22%7D%7D%2C%22Resources%22%3A%7B%22wpIP%22%3A%7B%22Type%22%3A%22UPAC%3A%3AIpAddress%22%2C%22Properties%22%3A%7B%22ZoneId%22%3A%7B%22Ref%22%3A%22ZoneId%22%7D%7D%7D%2C%22wpVM%22%3A%7B%22Type%22%3A%22UPAC%3A%3AVirtualMachine%22%2C%22Properties%22%3A%7B%22ProductCode%22%3A%7B%22Ref%22%3A%22ProductCode%22%7D%2C%22ZoneId%22%3A%7B%22Ref%22%3A%22ZoneId%22%7D%2C%22UserData%22%3A%7B%22Base64%22%3A%7B%22Join%22%3A%5B%22%22%2C%5B%22yum-yinstallunzip%5Cn%22%2C%22yum-yinstallhttpd%5Cn%22%2C%22yum-yinstallphp*%5Cn%22%2C%22yum-yinstallmariadbmariadb-server%5Cn%22%2C%22cd%2Fvar%2Fwww%2Fhtml%5Cn%22%2C%22wgethttps%3A%2F%2Fwordpress.org%2Flatest.tar.gz%5Cn%22%2C%22tar-zxvflatest.tar.gz%5Cn%22%2C%22rm-rflatest.tar.gz%5Cn%22%2C%22cp%2Fvar%2Fwww%2Fhtml%2Fwordpress%2Fwp-config-sample.php%2Fvar%2Fwww%2Fhtml%2Fwordpress%2Fwp-config.php%5Cn%22%2C%22mkdir-p%2Fvar%2Fwww%2Fhtml%2Fwordpress%2Fwp-content%2Fuploads%5Cn%22%2C%22chown-Rapache%3Aapache%2Fvar%2Fwww%2Fhtml%2Fwordpress%2F%5Cn%22%2C%22echo%22%2C%22%5C%22CREATEDATABASE%22%2C%22wordpress%22%2C%22%3B%5C%5Cn%22%2C%22GRANTALLON%22%2C%22wordpress%22%2C%22.*TO%27%22%2C%7B%22Ref%22%3A%22DBuser%22%7D%2C%22%27%40localhostIDENTIFIEDBY%27%22%2C%7B%22Ref%22%3A%22DBpassword%22%7D%2C%22%27%3B%5C%5Cn%5C%22%3E%2Ftmp%2Fsetup.sql%5Cn%22%2C%22systemctlstartmariadb%5Cn%22%2C%22systemctlenablemariadb%5Cn%22%2C%22systemctlstarthttpd%5Cn%22%2C%22systemctlenablehttpd%5Cn%22%2C%22firewall-cmd--permanent--add-service%3Dhttp%5Cn%22%2C%22firewall-cmd--permanent--add-service%3Dhttps%5Cn%22%2C%22firewall-cmd--reload%5Cn%22%2C%22mysqladmin-urootpassword%27%22%2C%7B%22Ref%22%3A%22DBrootpassword%22%7D%2C%22%27%5Cn%22%2C%22mysql-uroot--password%3D%27%22%2C%7B%22Ref%22%3A%22DBrootpassword%22%7D%2C%22%27%3C%2Ftmp%2Fsetup.sql%5Cn%22%2C%22sed-i%27s%2Fdatabase_name_here%2Fwordpress%2Fg%27%2Fvar%2Fwww%2Fhtml%2Fwordpress%2Fwp-config.php%5Cn%22%2C%22sed-i%27s%2Fusername_here%2F%22%2C%7B%22Ref%22%3A%22DBuser%22%7D%2C%22%2Fg%27%2Fvar%2Fwww%2Fhtml%2Fwordpress%2Fwp-config..php%5Cn%22%2C%22sed-i%27s%2Fpassword_here%2F%22%2C%7B%22Ref%22%3A%22DBpassword%22%7D%2C%22%2Fg%27%2Fvar%2Fwww%2Fhtml%2Fwordpress%2Fwp-config.php%5Cn%22%5D%5D%7D%7D%7D%7D%2C%22sshPort%22%3A%7B%22Type%22%3A%22UPAC%3A%3APortForwardingRule%22%2C%22Properties%22%3A%7B%22PrivatePort%22%3A%2222%22%2C%22PublicPort%22%3A%7B%22Ref%22%3A%22sshPortNumber%22%7D%2C%22Protocol%22%3A%22TCP%22%2C%22VirtualMachineId%22%3A%7B%22Ref%22%3A%22wpVM%22%7D%2C%22IpAddressId%22%3A%7B%22Ref%22%3A%22wpIP%22%7D%7D%7D%2C%22webPort%22%3A%7B%22Type%22%3A%22UPAC%3A%3APortForwardingRule%22%2C%22Properties%22%3A%7B%22PrivatePort%22%3A%2280%22%2C%22PublicPort%22%3A%7B%22Ref%22%3A%22webPortNumber%22%7D%2C%22Protocol%22%3A%22TCP%22%2C%22VirtualMachineId%22%3A%7B%22Ref%22%3A%22wpVM%22%7D%2C%22IpAddressId%22%3A%7B%22Ref%22%3A%22wpIP%22%7D%7D%7D%7D%2C%22Outputs%22%3A%7B%22generatedVMpw%22%3A%7B%22Value%22%3A%7B%22GetAtt%22%3A%5B%22wpVM%22%2C%22password%22%5D%7D%2C%22Description%22%3A%22%EC%83%9D%EC%84%B1%EB%90%9CVM%EC%9D%98SSH%EB%B9%84%EB%B0%80%EB%B2%88%ED%98%B8%22%7D%2C%22publicIP%22%3A%7B%22Value%22%3A%7B%22GetAtt%22%3A%5B%22wpIP%22%2C%22ipaddress%22%5D%7D%2C%22Description%22%3A%22%EC%83%9D%EC%84%B1%EB%90%9CVM%EC%9C%BC%EB%A1%9C%EC%A0%91%EA%B7%BC%EA%B0%80%EB%8A%A5%ED%95%9C%EA%B3%B5%EC%9D%B8IP%22%7D%7D%7D&apikey=mnjv4D2hZAnMgik0Lej36V8qDiOca_zV78mCqHpD5hUqxzDoxPkI2xHF8ifL4YrqGWIJUuqAr2MC-cMLXRW8fw&signature=faYld5KfmnKEUp8wR6o%2FF6Rs5b0%3D'.split("&")
+# ktURL = 'https://api.ucloudbiz.olleh.com/packaging/v1/client/api?command=validateTemplate&TemplateBody=%7B%27UPACTemplateVersion%27%3A%272018-10-25%27%2C%27Description%27%3A%271VM%EC%9C%BC%EB%A1%9C%EA%B5%AC%EC%84%B1%EB%90%9CWordpress%EC%9E%85%EB%8B%88%EB%8B%A4.%27%2C%27Parameters%27%3A%7B%27ZoneId%27%3A%7B%27Description%27%3A%27%5BServer%5DZoneID%EB%A5%BC%EC%9E%85%EB%A0%A5%ED%95%98%EC%84%B8%EC%9A%94.%27%2C%27Type%27%3A%27String%27%2C%27Default%27%3A%2795e2f517-d64a-4866-8585-5177c256f7c7%27%7D%2C%27ProductCode%27%3A%7B%27Description%27%3A%27%5BServer%5DProductCode%EB%A5%BC%EC%9E%85%EB%A0%A5%ED%95%98%EC%84%B8%EC%9A%94.CentOS7%EC%9D%B4%EC%83%81%EB%A7%8C%EA%B0%80%EB%8A%A5%ED%95%A9%EB%8B%88%EB%8B%A4.%27%2C%27Type%27%3A%27String%27%2C%27Default%27%3A%27std_cent7.064biten_1x1_rootonly%27%7D%2C%27sshPortNumber%27%3A%7B%27Description%27%3A%27%5BServer%5D%EC%84%9C%EB%B2%84%EB%A5%BC%EA%B3%B5%EC%9D%B8IP%EB%A1%9C%EC%97%B0%EA%B2%B0%ED%95%A0SSHport%EB%A5%BC%EC%9E%85%EB%A0%A5%ED%95%98%EC%84%B8%EC%9A%94.%27%2C%27Type%27%3A%27Number%27%2C%27Default%27%3A%2722%27%7D%2C%27webPortNumber%27%3A%7B%27Description%27%3A%27%5BServer%5D%EC%84%9C%EB%B2%84%EB%A5%BC%EA%B3%B5%EC%9D%B8IP%EB%A1%9C%EC%97%B0%EA%B2%B0%ED%95%A0Webport%EB%A5%BC%EC%9E%85%EB%A0%A5%ED%95%98%EC%84%B8%EC%9A%94.%27%2C%27Type%27%3A%27Number%27%2C%27Default%27%3A%2780%27%7D%2C%27DBuser%27%3A%7B%27Description%27%3A%27%5BServer%5DMariaDB%EC%9D%98%EC%9C%A0%EC%A0%80%EC%9D%B4%EB%A6%84%EC%9D%84%EC%9E%85%EB%A0%A5%ED%95%98%EC%84%B8%EC%9A%94.%27%2C%27Type%27%3A%27String%27%2C%27Default%27%3A%27scott%27%7D%2C%27DBpassword%27%3A%7B%27Description%27%3A%27%5BServer%5DMariaDB%EC%9D%98%EC%9C%A0%EC%A0%80%EB%B9%84%EB%B0%80%EB%B2%88%ED%98%B8%EB%A5%BC%EC%9E%85%EB%A0%A5%ED%95%98%EC%84%B8%EC%9A%94.%27%2C%27Type%27%3A%27String%27%2C%27Default%27%3A%27qwer1234%27%7D%2C%27DBrootpassword%27%3A%7B%27Description%27%3A%27%5BServer%5DMariaDB%EC%9D%98root%EB%B9%84%EB%B0%80%EB%B2%88%ED%98%B8%EB%A5%BC%EC%9E%85%EB%A0%A5%ED%95%98%EC%84%B8%EC%9A%94.%27%2C%27Type%27%3A%27String%27%2C%27Default%27%3A%27yY3h8wjnq%27%7D%7D%2C%27Resources%27%3A%7B%27wpIP%27%3A%7B%27Type%27%3A%27UPAC%3A%3AIpAddress%27%2C%27Properties%27%3A%7B%27ZoneId%27%3A%7B%27Ref%27%3A%27ZoneId%27%7D%7D%7D%2C%27wpVM%27%3A%7B%27Type%27%3A%27UPAC%3A%3AVirtualMachine%27%2C%27Properties%27%3A%7B%27ProductCode%27%3A%7B%27Ref%27%3A%27ProductCode%27%7D%2C%27ZoneId%27%3A%7B%27Ref%27%3A%27ZoneId%27%7D%2C%27UserData%27%3A%7B%27Base64%27%3A%7B%27Join%27%3A%5B%27%27%2C%5B%27yum-yinstallunzip%5Cn%27%2C%27yum-yinstallhttpd%5Cn%27%2C%27yum-yinstallphp%2A%5Cn%27%2C%27yum-yinstallmariadbmariadb-server%5Cn%27%2C%27cd%2Fvar%2Fwww%2Fhtml%5Cn%27%2C%27wgethttps%3A%2F%2Fwordpress.org%2Flatest.tar.gz%5Cn%27%2C%27tar-zxvflatest.tar.gz%5Cn%27%2C%27rm-rflatest.tar.gz%5Cn%27%2C%27cp%2Fvar%2Fwww%2Fhtml%2Fwordpress%2Fwp-config-sample.php%2Fvar%2Fwww%2Fhtml%2Fwordpress%2Fwp-config.php%5Cn%27%2C%27mkdir-p%2Fvar%2Fwww%2Fhtml%2Fwordpress%2Fwp-content%2Fuploads%5Cn%27%2C%27chown-Rapache%3Aapache%2Fvar%2Fwww%2Fhtml%2Fwordpress%2F%5Cn%27%2C%27echo%27%2C%27%22CREATEDATABASE%27%2C%27wordpress%27%2C%27%3B%5C%5Cn%27%2C%27GRANTALLON%27%2C%27wordpress%27%2C%22.%2ATO%27%22%2C%7B%27Ref%27%3A%27DBuser%27%7D%2C%22%27%40localhostIDENTIFIEDBY%27%22%2C%7B%27Ref%27%3A%27DBpassword%27%7D%2C%27%5C%27%3B%5C%5Cn%22%3E%2Ftmp%2Fsetup.sql%5Cn%27%2C%27systemctlstartmariadb%5Cn%27%2C%27systemctlenablemariadb%5Cn%27%2C%27systemctlstarthttpd%5Cn%27%2C%27systemctlenablehttpd%5Cn%27%2C%27firewall-cmd--permanent--add-service%3Dhttp%5Cn%27%2C%27firewall-cmd--permanent--add-service%3Dhttps%5Cn%27%2C%27firewall-cmd--reload%5Cn%27%2C%22mysqladmin-urootpassword%27%22%2C%7B%27Ref%27%3A%27DBrootpassword%27%7D%2C%22%27%5Cn%22%2C%22mysql-uroot--password%3D%27%22%2C%7B%27Ref%27%3A%27DBrootpassword%27%7D%2C%22%27%3C%2Ftmp%2Fsetup.sql%5Cn%22%2C%22sed-i%27s%2Fdatabase_name_here%2Fwordpress%2Fg%27%2Fvar%2Fwww%2Fhtml%2Fwordpress%2Fwp-config.php%5Cn%22%2C%22sed-i%27s%2Fusername_here%2F%22%2C%7B%27Ref%27%3A%27DBuser%27%7D%2C%22%2Fg%27%2Fvar%2Fwww%2Fhtml%2Fwordpress%2Fwp-config.php%5Cn%22%2C%22sed-i%27s%2Fpassword_here%2F%22%2C%7B%27Ref%27%3A%27DBpassword%27%7D%2C%22%2Fg%27%2Fvar%2Fwww%2Fhtml%2Fwordpress%2Fwp-config.php%5Cn%22%5D%5D%7D%7D%7D%7D%2C%27sshPort%27%3A%7B%27Type%27%3A%27UPAC%3A%3APortForwardingRule%27%2C%27Properties%27%3A%7B%27PrivatePort%27%3A%2722%27%2C%27PublicPort%27%3A%7B%27Ref%27%3A%27sshPortNumber%27%7D%2C%27Protocol%27%3A%27TCP%27%2C%27VirtualMachineId%27%3A%7B%27Ref%27%3A%27wpVM%27%7D%2C%27IpAddressId%27%3A%7B%27Ref%27%3A%27wpIP%27%7D%7D%7D%2C%27webPort%27%3A%7B%27Type%27%3A%27UPAC%3A%3APortForwardingRule%27%2C%27Properties%27%3A%7B%27PrivatePort%27%3A%2780%27%2C%27PublicPort%27%3A%7B%27Ref%27%3A%27webPortNumber%27%7D%2C%27Protocol%27%3A%27TCP%27%2C%27VirtualMachineId%27%3A%7B%27Ref%27%3A%27wpVM%27%7D%2C%27IpAddressId%27%3A%7B%27Ref%27%3A%27wpIP%27%7D%7D%7D%7D%2C%27Outputs%27%3A%7B%27generatedVMpw%27%3A%7B%27Value%27%3A%7B%27GetAtt%27%3A%5B%27wpVM%27%2C%27password%27%5D%7D%2C%27Description%27%3A%27%EC%83%9D%EC%84%B1%EB%90%9CVM%EC%9D%98SSH%EB%B9%84%EB%B0%80%EB%B2%88%ED%98%B8%27%7D%2C%27publicIP%27%3A%7B%27Value%27%3A%7B%27GetAtt%27%3A%5B%27wpIP%27%2C%27ipaddress%27%5D%7D%2C%27Description%27%3A%27%EC%83%9D%EC%84%B1%EB%90%9CVM%EC%9C%BC%EB%A1%9C%EC%A0%91%EA%B7%BC%EA%B0%80%EB%8A%A5%ED%95%9C%EA%B3%B5%EC%9D%B8IP%27%7D%7D%7D&apikey=2dryYyGz30yTYiiOd_No8QUfqoUHXhU0MeTiYUdayXRsTwrxWUYiJLKQo6UC_A5O8C8CG6qEd2NLYgIJusLTuA&signature=qOpfJrsuI9hfHkYs7qQD2fWNTx4%3D'.split("&")
