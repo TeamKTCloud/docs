@@ -25,18 +25,17 @@ root = db.reference()
 
 #KT
 class KT_instance():
-    User = root.get()
-    key = root.child(User).child('KT').child('Key').get()
+    UID = 0
+    key = 0
     requestURL = 0
     data = 0
     command_list = 0
     command = 0
     requestParams = 0
-    
-    def GetUser(self):
-        self.User = root.get()
 
-    def CreateURL(self, command):
+    def CreateURL(self, UID, command):
+        self.UID = UID
+        self.key = root.child(self.UID).child('KT').child('Key').get()
         self.command = command
         params={}
         params['command']=self.command
@@ -76,7 +75,7 @@ class KT_instance():
                 created = self.data['listvirtualmachinesresponse']['virtualmachine'][i]['created']
                 cupspeed = self.data['listvirtualmachinesresponse']['virtualmachine'][i]['cpuspeed']
                 dic[name] = {'State':state, 'Created':created, 'CpuSpeed':cupspeed}
-                root.child('User').child('KT').child('Resources').child('VM').update(dic)
+                root.child(self.UID).child('KT').child('Resources').child('VM').update(dic)
 
         if self.command == 'listLoadBalancers':
             count = self.data['listloadbalancersresponse']['count']
@@ -85,18 +84,20 @@ class KT_instance():
                 id = self.data['listloadbalancersresponse']['loadbalancer'][i]['loadbalancerid']
                 state = self.data['listloadbalancersresponse']['loadbalancer'][i]['state']
                 dic[name] = {'ID':id, 'State':state}
-                root.child('User').child('KT').child('Resources').child('LB').update(dic)
+                root.child(self.UID).child('KT').child('Resources').child('LB').update(dic)
 
 
 #AWS
 class AWS_instance():
-    key = root.child('User').child('AWS').child('Key').get()
+    UID = 0
+    key = 0
     ec2_client = 0 
     ec2_resource = 0
     response = 0
 
-
-    def CreateKey(self):
+    def CreateKey(self, UID):
+        self.UID = UID
+        self.key = root.child(self.UID).child('AWS').child('Key').get()
         self.ec2_client = boto3.client(
             'ec2',
             # Hard coded strings as credentials, not recommended.
@@ -123,16 +124,19 @@ class AWS_instance():
             state = self.response['Reservations'][i]['Instances'][0]['State']['Name']
             print(name, state, isinstance_id)
             dic[name] = {'State' : state}
-            root.child('User').child('AWS').child('Resource').child('VM').update(dic)
+            root.child(self.UID).child('AWS').child('Resource').child('VM').update(dic)
             i = i+1
 
 
 #Azure
 class Azure_instance():
-    key = root.child('User').child('Azure').child('Key').get()
+    UID = 0
+    key = 0
     compute_client = 0
 
-    def CreateKey(self):
+    def CreateKey(self, UID):
+        self.UID = UID
+        self.key = root.child(self.UID).child('Azure').child('Key').get()
         TENANT_ID = self.key['TENANT_ID']
         CLIENT = self.key['CLIENT']
         KEY = self.key['KEY']
@@ -151,21 +155,28 @@ class Azure_instance():
             print("\tVM: {}".format(vm.name))
         name = format(vm.name)
         dic[name] = {'State':'Running'}
-        root.child('User').child('Azure').child('Resources').child('VM').update(dic)
+        root.child(self.UID).child('Azure').child('Resources').child('VM').update(dic)
+
+
+
+
+    
 
 
 # #'listVirtualMachines', 'listLoadBalancers', 'usageLoadBalancerService'
 KT_instance = KT_instance()
 
-# #listVirtualMachines
-KT_instance.CreateURL('listVirtualMachines')
-KT_instance.DataParsing()
-KT_instance.DataPut()
+User = root.get()
+for i in User.keys():
+    # #listVirtualMachines
+    KT_instance.CreateURL(i, 'listVirtualMachines')
+    KT_instance.DataParsing()
+    KT_instance.DataPut()
 
-# #listLoadBalancers
-KT_instance.CreateURL('listLoadBalancers')
-KT_instance.DataParsing()
-KT_instance.DataPut()
+    # #listLoadBalancers
+    KT_instance.CreateURL(i, 'listLoadBalancers')
+    KT_instance.DataParsing()
+    KT_instance.DataPut()
 
 # AWS_instance = AWS_instance()
 # AWS_instance.CreateKey()
