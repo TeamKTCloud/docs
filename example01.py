@@ -25,13 +25,17 @@ root = db.reference()
 
 #KT
 class KT_instance():
-    key = root.child('User').child('KT').child('Key').get()
+    User = root.get()
+    key = root.child(User).child('KT').child('Key').get()
     requestURL = 0
     data = 0
     command_list = 0
     command = 0
     requestParams = 0
     
+    def GetUser(self):
+        self.User = root.get()
+
     def CreateURL(self, command):
         self.command = command
         params={}
@@ -163,12 +167,12 @@ KT_instance.CreateURL('listLoadBalancers')
 KT_instance.DataParsing()
 KT_instance.DataPut()
 
-AWS_instance = AWS_instance()
-AWS_instance.CreateKey()
-AWS_instance.DataPut()
+# AWS_instance = AWS_instance()
+# AWS_instance.CreateKey()
+# AWS_instance.DataPut()
 
-Azure_instance = Azure_instance()
-Azure_instance.CreateKey()
-Azure_instance.DataPut()
+# Azure_instance = Azure_instance()
+# Azure_instance.CreateKey()
+# Azure_instance.DataPut()
 
 
