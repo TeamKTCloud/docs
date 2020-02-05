@@ -40,8 +40,8 @@ class KT_instance():
         params={}
         params['command']=self.command
         params['response']='json'
-        params['apiKey'] = self.key['API_KEY']    
-        secretkey = self.key['SECRET_KEY']  
+        params['apiKey'] = list(self.key.keys())[0]
+        secretkey = self.key[list(self.key.keys())[0]]  
         secretkey = secretkey.encode('utf-8')
         self.requestParams = '&'.join(['='.join([k,urllib.parse.quote_plus(params[k])]) for k in params.keys()])
 
@@ -101,17 +101,17 @@ class AWS_instance():
         self.ec2_client = boto3.client(
             'ec2',
             # Hard coded strings as credentials, not recommended.
-        aws_access_key_id = self.key['aws_access_key_id'],
-        aws_secret_access_key = self.key['aws_secret_access_key'],
-        region_name = self.key['region_name']
+        aws_access_key_id = list(self.key.keys())[0],
+        aws_secret_access_key = self.key[list(self.key.keys())[0]].split(',')[0],
+        region_name = self.key[list(self.key.keys())[0]].split(',')[1]
         )
 
         self.ec2_resource = boto3.resource(
             'ec2',
             # Hard coded strings as credentials, not recommended.
-            aws_access_key_id = self.key['aws_access_key_id'],
-            aws_secret_access_key = self.key['aws_secret_access_key'],
-            region_name = self.key['region_name']
+            aws_access_key_id = list(self.key.keys())[0],
+            aws_secret_access_key = self.key[list(self.key.keys())[0]].split(',')[0],
+            region_name = self.key[list(self.key.keys())[0]].split(',')[1]
         )
 
     def DataPut(self):
@@ -137,10 +137,10 @@ class Azure_instance():
     def CreateKey(self, UID):
         self.UID = UID
         self.key = root.child(self.UID).child('Azure').child('Key').get()
-        TENANT_ID = self.key['TENANT_ID']
-        CLIENT = self.key['CLIENT']
-        KEY = self.key['KEY']
-        subscription_id = self.key['subscription_id']
+        TENANT_ID = list(self.key.keys())[0]
+        CLIENT = self.key[list(self.key.keys())[0]].split(',')[0]
+        KEY = self.key[list(self.key.keys())[0]].split(',')[1]
+        subscription_id = self.key[list(self.key.keys())[0]].split(',')[2]
         credentials = ServicePrincipalCredentials(
             client_id = CLIENT,
             secret = KEY,
@@ -158,32 +158,28 @@ class Azure_instance():
         root.child(self.UID).child('Azure').child('Resources').child('VM').update(dic)
 
 
-
-
-    
-
-
 # #'listVirtualMachines', 'listLoadBalancers', 'usageLoadBalancerService'
 KT_instance = KT_instance()
+AWS_instance = AWS_instance()
+Azure_instance = Azure_instance()
 
 User = root.get()
 for i in User.keys():
     # #listVirtualMachines
-    KT_instance.CreateURL(i, 'listVirtualMachines')
-    KT_instance.DataParsing()
-    KT_instance.DataPut()
+    # KT_instance.CreateURL(i, 'listVirtualMachines')
+    # KT_instance.DataParsing()
+    # KT_instance.DataPut()
 
     # #listLoadBalancers
-    KT_instance.CreateURL(i, 'listLoadBalancers')
-    KT_instance.DataParsing()
-    KT_instance.DataPut()
+    # KT_instance.CreateURL(i, 'listLoadBalancers')
+    # KT_instance.DataParsing()
+    # KT_instance.DataPut()
 
-# AWS_instance = AWS_instance()
-# AWS_instance.CreateKey()
-# AWS_instance.DataPut()
+ 
+    AWS_instance.CreateKey(i)
+    AWS_instance.DataPut()
 
-# Azure_instance = Azure_instance()
-# Azure_instance.CreateKey()
-# Azure_instance.DataPut()
+    # Azure_instance.CreateKey(i)
+    # Azure_instance.DataPut()
 
 
